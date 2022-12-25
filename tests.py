@@ -24,7 +24,7 @@ evoConst =  Evolution.Constants()
 a = []
 b = []
 for i in range(constants.total_predator_agents):
-    a.append( Agent.PredatorAgent( constants=constants, environment=environment, use_messages=False ) )
+    a.append( Agent.SinglePredator( constants=constants, environment=environment, use_messages=False ) )
 for i in range(constants.total_prey_agents):
     b.append( Agent.PreyAgent( constants=constants, environment=environment, use_messages=True ) )
 

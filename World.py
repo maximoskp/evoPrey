@@ -37,13 +37,13 @@ class Constants:
                 'food_replenishment': 70
             },
             'predator': {
-                'velocity_limit': 12.0,
-                'acceleration_limit': 1.2,
-                'perception_radius': 200.0,
+                'velocity_limit': 20.0,
+                'acceleration_limit': 2.0,
+                'perception_radius': 10000000.0,
                 'food_level': 200.0,
                 'food_depletion': 1.0,
                 'food_radius': 50.0,
-                'food_replenishment': 100
+                'food_replenishment': 200
             },
             'prey': {
                 'velocity_limit': 10,
@@ -60,7 +60,7 @@ class Constants:
     def make_world_constants(self):
         self.world_width = 1920
         self.world_height = 1440
-        self.total_predator_agents = 100
+        self.total_predator_agents = 1
         self.total_prey_agents = 100
     # end make_world_constants
 # end Constants
@@ -108,7 +108,7 @@ class Environment:
     # end update_agents
     
     def evolve(self):
-        # evolve prey
+        # # evolve prey
         # set iterations of death to alive agents
         for i in range( len(self.prey_agents) ):
             self.prey_agents[i].death_iteration_number = self.total_iterations
@@ -116,11 +116,12 @@ class Environment:
         # randomise position, velocity and acceleration - reset is_alive
         for p in self.prey_agents:
             p.init_random()
-        # evolve predators
+        # re-initialize predators
         # set iterations of death to alive agents
         for i in range( len(self.predator_agents) ):
             self.predator_agents[i].death_iteration_number = self.total_iterations
-        self.predator_agents = self.genetics.evolve_population(self.predator_agents + self.dead_predator_agents, self.constants.total_predator_agents)
+        self.predator_agents = self.predator_agents + self.dead_predator_agents
+        # self.predator_agents = self.genetics.evolve_population(self.predator_agents + self.dead_predator_agents, self.constants.total_predator_agents)
         # restore food levels and randomise position, velocity and acceleration - reset is_alive
         for p in self.predator_agents:
             p.restore_food_level()

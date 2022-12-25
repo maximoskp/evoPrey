@@ -324,7 +324,7 @@ class GenericAgent:
             self.accelerate_to_location_with_multiplier( walls, self.motion_output[6] )
         # accelerate / deccelerate to current direction
         # if not moving, start moving to random direction
-        if np.abs( self.vx ) < 0.5 and np.abs( self.vy ) < 0.5:
+        if np.abs( self.vx ) < 0.5 and np.abs( self.vy ) < 0.5 and np.abs( self.ax ) < 0.05 and np.abs( self.ay ) < 0.05:
             tmp_x = 2*np.random.rand() - 1
             tmp_y = 2*np.random.rand() - 1
         else:
@@ -350,7 +350,7 @@ class GenericAgent:
     # end move
     
     def accelerate_to_location_with_multiplier( self, p, m ):
-        tmp_acceleration = ( self.location - p )
+        tmp_acceleration = ( p - self.location )
         ax , ay = aux.limit_xy( tmp_acceleration[0], tmp_acceleration[1], self.constants.agent_constants[self.category]['acceleration_limit'] )
         self.acceleration_array += m*np.array([ ax, ay ])
     # end accelerate_to_location_with_multiplier
@@ -431,3 +431,42 @@ class PreyAgent(GenericAgent):
         self.ax , self.ay = aux.limit_xy( ax, ay, self.constants.agent_constants[self.category]['acceleration_limit'] )
     # end init_random_position_velocity
 # end PreyAgent
+
+class SinglePredator(PredatorAgent):
+    category = 'predator'
+    def __init__(self, genome=None, constants=None, environment=None, use_messages=True):
+        super().__init__(genome, constants, environment=environment, use_messages=use_messages)
+    # end init
+
+    # override
+    def move(self):
+        self.ax = 0
+        self.ay = 0
+        self.acceleration_array = np.zeros(2)
+        self.location = np.array( [ self.x , self.y ] )
+        if self.closest_enemy is not None:
+            self.accelerate_to_location_with_multiplier( self.closest_enemy_location, 1 )
+            self.accelerate_to_align_with_multiplier( self.closest_enemy_velocity, 1./(0.02*np.linalg.norm(self.location-self.closest_enemy_location)+1) )
+        # if not moving, start moving to random direction
+        if np.abs( self.vx ) < 0.5 and np.abs( self.vy ) < 0.5 and np.abs( self.ax ) < 0.05 and np.abs( self.ay ) < 0.05:
+            tmp_x = 2*np.random.rand() - 1
+            tmp_y = 2*np.random.rand() - 1
+            self.accelerate_to_align_with_multiplier( [tmp_x, tmp_y], 1 )
+        self.ax , self.ay = aux.limit_xy( self.acceleration_array[0], self.acceleration_array[1], self.constants.agent_constants[self.category]['acceleration_limit'] )
+        self.vx , self.vy = aux.limit_xy( self.vx + self.ax, self.vy + self.ay, self.constants.agent_constants[self.category]['velocity_limit'] )
+        self.x += self.vx
+        self.y += self.vy
+        if self.x < 0:
+            self.x = -self.x
+            self.vx = -self.vx
+        if self.x > self.constants.world_width:
+            self.x = 2*self.constants.world_width - self.x
+            self.vx = -self.vx
+        if self.y < 0:
+            self.y = -self.y
+            self.vy = -self.vy
+        if self.y > self.constants.world_height:
+            self.y = 2*self.constants.world_height - self.y
+            self.vy = -self.vy
+    # end move
+# end class SinglePredator
