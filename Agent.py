@@ -377,7 +377,7 @@ class PredatorAgent(GenericAgent):
     # end init
     
     def update_food( self ):
-        self.food_level -= 0.5*self.constants.agent_constants[self.category]['food_depletion']*np.linalg.norm( [self.vx, self.vy] )/self.constants.agent_constants[self.category]['velocity_limit'] + 0.5*self.constants.agent_constants[self.category]['food_depletion']
+        self.food_level -= 0.5*self.constants.agent_constants[self.category]['food_depletion']*np.linalg.norm( [self.ax, self.ay] )/self.constants.agent_constants[self.category]['acceleration_limit'] + 0.5*self.constants.agent_constants[self.category]['food_depletion']
         agents2die = {
             'predator': [],
             'prey': []
@@ -393,12 +393,16 @@ class PredatorAgent(GenericAgent):
         return agents2die
     # end update_food
 
-    def init_random(self):
+    def init_random(self, position='center'):
         self.is_alive = True
         self.death_iteration_number = 0
         # position
-        self.x = 0.5*np.random.rand()*self.constants.world_width
-        self.y = np.random.rand()*self.constants.world_height
+        if position == 'left':
+            self.x = 0.5*np.random.rand()*self.constants.world_width
+            self.y = np.random.rand()*self.constants.world_height
+        elif position == 'center':
+            self.x = 0.5*self.constants.world_width
+            self.y = 0.5*self.constants.world_height
         # velocity
         vx = 2*np.random.rand() - 1
         vy = 2*np.random.rand() - 1
@@ -415,12 +419,16 @@ class PreyAgent(GenericAgent):
     def __init__(self, genome=None, constants=None, environment=None, use_messages=True):
         super().__init__(genome, constants, environment=environment, use_messages=use_messages)
     # end init
-    def init_random(self):
+    def init_random(self, position='not_center'):
         self.is_alive = True
         self.death_iteration_number = 0
         # position
-        self.x = (0.5 + 0.5*np.random.rand())*self.constants.world_width
-        self.y = np.random.rand()*self.constants.world_height
+        if position == 'right':
+            self.x = (0.5 + 0.5*np.random.rand())*self.constants.world_width
+            self.y = np.random.rand()*self.constants.world_height
+        elif position == 'not_center':
+            self.x = (np.random.randint(2)*0.6 + 0.4*np.random.rand())*self.constants.world_width
+            self.y = (np.random.randint(2)*0.6 + 0.4*np.random.rand())*self.constants.world_height
         # velocity
         vx = 2*np.random.rand() - 1
         vy = 2*np.random.rand() - 1
