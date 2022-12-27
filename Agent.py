@@ -108,7 +108,7 @@ class GenericAgent:
         self.genome_size = 0
         for k in self.weight_keys:
             self.genome_size += self.weights[k].size
-        self.genome = 2*np.random.random( self.genome_size ) - 1
+        self.genome = 20*np.random.random( self.genome_size ) - 10
     # end random_genome
 
     def genome2weights(self):

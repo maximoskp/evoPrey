@@ -14,14 +14,14 @@ np.random.seed(0)
 class Constants:
     def __init__(self):
         self.minPopulationSize = 0
-        self.total_generations_number = 10000
+        self.total_generations_number = 50000
     # end
 # end Constants
 
 class Genetics:
     def __init__(self):
         self.mutation_probability = 0.02
-        self.mutation_range = [-1, 1]
+        self.mutation_range = [-10, 10]
         self.fitness_bias = 1.3
     # end init
     
