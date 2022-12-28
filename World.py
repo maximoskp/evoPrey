@@ -39,7 +39,7 @@ class Constants:
             'predator': {
                 'velocity_limit': 15.0,
                 'acceleration_limit': 4.5,
-                'perception_radius': 300.0,
+                'perception_radius': 1000000000.0,
                 'food_level': 500.0,
                 'food_depletion': 1.0,
                 'food_radius': 50.0,
