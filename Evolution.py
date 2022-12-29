@@ -22,7 +22,7 @@ class Genetics:
     def __init__(self):
         self.mutation_probability = 0.02
         self.mutation_range = [-1, 1]
-        self.fitness_bias = 1.3
+        self.fitness_bias = 10.
     # end init
     
     def evolve_population( self, p , total_new ):
