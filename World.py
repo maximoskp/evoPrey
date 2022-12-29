@@ -37,8 +37,8 @@ class Constants:
                 'food_replenishment': 70
             },
             'predator': {
-                'velocity_limit': 15.0,
-                'acceleration_limit': 4.5,
+                'velocity_limit': 11.0,
+                'acceleration_limit': 3.3,
                 'perception_radius': 1000000000.0,
                 'food_level': 500.0,
                 'food_depletion': 1.0,
