@@ -125,7 +125,7 @@ class Environment:
         self.prey_agents = self.genetics.evolve_population(self.prey_agents + self.dead_prey_agents + self.escaped_prey_agents, self.constants.total_prey_agents)
         # randomise position, velocity and acceleration - reset is_alive
         for p in self.prey_agents:
-            p.init_random('right')
+            p.init_random(position='right')
         # re-initialize predators
         # set iterations of death to alive agents
         for i in range( len(self.predator_agents) ):
@@ -135,7 +135,7 @@ class Environment:
         # restore food levels and randomise position, velocity and acceleration - reset is_alive
         for p in self.predator_agents:
             p.restore_food_level()
-            p.init_random('left')
+            p.init_random(position='left')
         self.dead_predator_agents = []
         self.dead_prey_agents = []
         self.escaped_prey_agents =[]
@@ -203,7 +203,7 @@ class Environment:
                 # plt.text(p.x, p.y, "{:.2f}".format(p.food_level), c='white', alpha=0.3)
                 plt.text(p.x, p.y, str(int(p.food_level)), c='white', alpha=0.3)
         # door
-        plt.plot(self.door_location[0], self.door_location[1], 'bs')
+        plt.plot(self.door_location[0], self.door_location[1], 'ws', markersize=15)
         plt.xticks([])
         plt.yticks([])
         plt.xlim([0, self.constants.world_width])

@@ -405,7 +405,7 @@ class PredatorAgent(GenericAgent):
         return agents2die
     # end update_food
 
-    def init_random(self, position='center'):
+    def init_random(self, position='left'):
         self.is_alive = True
         self.escaped = False
         self.death_iteration_number = 0
@@ -432,7 +432,7 @@ class PreyAgent(GenericAgent):
     def __init__(self, genome=None, constants=None, environment=None, use_messages=True):
         super().__init__(genome, constants, environment=environment, use_messages=use_messages)
     # end init
-    def init_random(self, position='not_center'):
+    def init_random(self, position='right'):
         self.is_alive = True
         self.escaped = False
         self.death_iteration_number = 0

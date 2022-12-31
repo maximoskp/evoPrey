@@ -61,7 +61,7 @@ class Genetics:
         # normalise
         n = (p-np.min(p)+1)/(np.max(p)-np.min(p)+1)
         # apply bias
-        y = 0.9*esc + 0.1*np.power(n, self.fitness_bias)
+        y = 0.9*np.array(esc) + 0.1*np.power(n, self.fitness_bias)
         # cummulative
         self.cummulative_fitness = np.cumsum(y)/np.sum(y)
     # end compute_cummulative_fitness
