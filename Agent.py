@@ -26,9 +26,11 @@ class GenericAgent:
         # 16. Enemy loudest messages (int from bits).
         # 17. Distance from wall x. (in [0,1], normalized on perception radius).
         # 18. Distance from wall y. (in [0,1], normalized on perception radius).
-        self.external_input_size = 18
+        # 19. Distance from door x. (in [0,1], normalized on perception radius).
+        # 20. Distance from door y. (in [0,1], normalized on perception radius).
+        self.external_input_size = 20
         if not self.use_messages:
-            self.external_input_size = 16
+            self.external_input_size = 18
         # Internal input:
         # 1. Life level.
         # 2. Self velocity x.
@@ -45,9 +47,11 @@ class GenericAgent:
         # 6. Accelerate to align velocity with enemies (what does negative mean?).
         # 7. Accelerate away from wall (percentage of max, in [-1,1]).
         # 8. Accelerate / deccelerate in current direction (percentage of current velocity, in [-1,1]).
-        self.motion_output_size = 8
+        # 9. Accelerate / deccelerate towards door (percentage of max, in [-1,1]).
+        self.motion_output_size = 9
         # message information
         self.message_bits = 2
+        self.genome_multiplier = 3
         if not self.use_messages:
             self.message_bits = 0
         # WEIGHTS
@@ -67,6 +71,7 @@ class GenericAgent:
         # position, velocity and acceleration
         self.init_random()
         self.is_alive = True
+        self.escaped = False
         self.death_iteration_number = 0
         self.food_level = self.constants.agent_constants[self.category]['food_level']
         self.message = 0
@@ -108,7 +113,7 @@ class GenericAgent:
         self.genome_size = 0
         for k in self.weight_keys:
             self.genome_size += self.weights[k].size
-        self.genome = 2*np.random.random( self.genome_size ) - 1
+        self.genome =  self.genome_multiplier*( 2*np.random.random( self.genome_size ) - 1 )
     # end random_genome
 
     def genome2weights(self):
@@ -244,8 +249,10 @@ class GenericAgent:
                 self.closest_enemy_velocity_magnitude, # 14
                 self.friends_loudest_message, #15
                 self.enemies_loudest_message, #16
-                min( min( self.x , self.constants.world_width - self.x )/self.constants.agent_constants[self.category]['perception_radius'], 1.1 ), #17
-                min( min( self.y , self.constants.world_height - self.y )/self.constants.agent_constants[self.category]['perception_radius'], 1.1 ), #18
+                min( min( self.x , self.constants.world_width - self.x )/self.constants.agent_constants[self.category]['perception_radius'], 1.01 ), #17
+                min( min( self.y , self.constants.world_height - self.y )/self.constants.agent_constants[self.category]['perception_radius'], 1.01 ), #18
+                min( abs(self.environment.door_location[0] - self.x)/self.constants.agent_constants[self.category]['perception_radius'], 1.01 ), #19
+                min( abs(self.environment.door_location[1] - self.y)/self.constants.agent_constants[self.category]['perception_radius'], 1.01 ), #20
                 self.food_level, # 1
                 self.vx, # 2
                 self.vy, # 3
@@ -270,6 +277,8 @@ class GenericAgent:
                 self.closest_enemy_velocity_magnitude, # 14
                 min( min( self.x , self.constants.world_width - self.x )/self.constants.agent_constants[self.category]['perception_radius'], 1.1 ), #15
                 min( min( self.y , self.constants.world_height - self.y )/self.constants.agent_constants[self.category]['perception_radius'], 1.1 ), #16
+                min( abs(self.environment.door_location[0] - self.x)/self.constants.agent_constants[self.category]['perception_radius'], 1.01 ), #19
+                min( abs(self.environment.door_location[1] - self.y)/self.constants.agent_constants[self.category]['perception_radius'], 1.01 ), #20
                 self.food_level, # 1
                 self.vx, # 2
                 self.vy, # 3
@@ -322,6 +331,9 @@ class GenericAgent:
             hitting_wall = True
         if hitting_wall:
             self.accelerate_to_location_with_multiplier( walls, self.motion_output[6] )
+        # door acceleration
+        if aux.dist_2d_arrays( self.location , self.environment.door_location ) < self.constants.agent_constants[self.category]['perception_radius']:
+            self.accelerate_to_location_with_multiplier( self.environment.door_location, self.motion_output[7] )
         # accelerate / deccelerate to current direction
         # if not moving, start moving to random direction
         if np.abs( self.vx ) < 0.5 and np.abs( self.vy ) < 0.5 and np.abs( self.ax ) < 0.05 and np.abs( self.ay ) < 0.05:
@@ -395,6 +407,7 @@ class PredatorAgent(GenericAgent):
 
     def init_random(self, position='center'):
         self.is_alive = True
+        self.escaped = False
         self.death_iteration_number = 0
         # position
         if position == 'left':
@@ -421,6 +434,7 @@ class PreyAgent(GenericAgent):
     # end init
     def init_random(self, position='not_center'):
         self.is_alive = True
+        self.escaped = False
         self.death_iteration_number = 0
         # position
         if position == 'right':
@@ -438,6 +452,14 @@ class PreyAgent(GenericAgent):
         ay = 2*np.random.rand() - 1
         self.ax , self.ay = aux.limit_xy( ax, ay, self.constants.agent_constants[self.category]['acceleration_limit'] )
     # end init_random_position_velocity
+
+    def update_escape( self ):
+        agents2escape = []
+        if aux.dist_2d_arrays( self.location, self.environment.door_location ) <= self.constants.agent_constants[self.category]['escape_radius']:
+            self.escaped = True
+            agents2escape.append(self)
+        return agents2escape
+    # end update_food
 # end PreyAgent
 
 class SinglePredator(PredatorAgent):

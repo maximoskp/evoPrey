@@ -12,7 +12,7 @@ import Evolution
 import csv
 import os
 
-session_name = 'sel_with_signals'
+session_name = 'door1_with_signals'
 
 # initialize constants and environment
 constants = World.Constants()
@@ -52,7 +52,7 @@ if not os.path.exists('data/' + session_name):
 if not os.path.exists('weights/' + session_name):
     os.makedirs('weights/' + session_name)
 
-fields=['generation', 'iteration', 'predators', 'prey','food_min','food_mean', 'food_median', 'food_max']
+fields=['generation', 'iteration', 'predator_food', 'prey_alive', 'prey_dead', 'prey_escaped']
 with open('data/' + session_name + '/_summary.csv', 'w') as f:
     writer = csv.writer(f)
     writer.writerow(fields)
@@ -66,14 +66,14 @@ while current_generation < evoConst.total_generations_number:
     while len(environment.predator_agents) > evoConst.minPopulationSize and len(environment.prey_agents) > evoConst.minPopulationSize:
         environment.update()
         environment.plot_iteration(generation=current_generation)
-        print( str(current_generation) + '-' + str(environment.total_iterations) +'| predators: ' + str(len(environment.predator_agents)) + ' (' + "{:.2f}".format(environment.min_predator_food_level) + "/{:.2f}".format(environment.mean_predator_food_level)+ "/{:.2f}".format(environment.max_predator_food_level) + ') ' + '\t - prey: ' + str(len(environment.prey_agents)) )
+        print( str(current_generation) + '-' + str(environment.total_iterations) +'| predator_food: ' + "{:.2f}".format(environment.min_predator_food_level) + '\t - prey alive|dead|escaped: ' + str(len(environment.prey_agents)) + '|' + str(len(environment.dead_prey_agents)) + '|' + str(len(environment.escaped_prey_agents)) )
         # print( str(environment.total_iterations) + '|' + str(len(environment.predator_agents)) + '|' + str(len(environment.prey_agents)), end='---' )
         with open('data/' + session_name + '/details_generation_' + "{:05d}".format(current_generation) + '.csv', 'a') as f:
             writer = csv.writer(f)
-            writer.writerow([ current_generation, environment.total_iterations, len(environment.predator_agents), len(environment.prey_agents), environment.min_predator_food_level, environment.mean_predator_food_level, environment.median_predator_food_level, environment.max_predator_food_level ])
+            writer.writerow([ current_generation, environment.total_iterations, environment.min_predator_food_level, environment.mean_predator_food_level, environment.median_predator_food_level, environment.max_predator_food_level ])
     environment.save_video( generation=current_generation )
     with open('data/' + session_name + '/_summary.csv', 'a') as f:
         writer = csv.writer(f)
-        writer.writerow([ current_generation, environment.total_iterations, len(environment.predator_agents), len(environment.prey_agents), environment.min_predator_food_level, environment.mean_predator_food_level, environment.median_predator_food_level, environment.max_predator_food_level ])
+        writer.writerow([ current_generation, environment.total_iterations, environment.min_predator_food_level, len(environment.prey_agents), len(environment.dead_prey_agents), len(environment.escaped_prey_agents) ])
     environment.evolve()
     current_generation += 1

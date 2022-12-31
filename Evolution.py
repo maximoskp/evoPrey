@@ -54,12 +54,14 @@ class Genetics:
     def compute_cummulative_fitness(self, agents):
         # get iterations until death
         p = []
+        esc = []
         for agent in agents:
             p.append( agent.death_iteration_number )
+            esc.append( float(agent.escaped) )
         # normalise
         n = (p-np.min(p)+1)/(np.max(p)-np.min(p)+1)
         # apply bias
-        y = np.power(n, self.fitness_bias)
+        y = 0.9*esc + 0.1*np.power(n, self.fitness_bias)
         # cummulative
         self.cummulative_fitness = np.cumsum(y)/np.sum(y)
     # end compute_cummulative_fitness
@@ -102,6 +104,6 @@ class Genetics:
     def mutation(self, p):
         gsize = p.genome.size
         i = np.random.randint( gsize )
-        p.genome[i] = self.mutation_range[0] + np.random.random()*(self.mutation_range[1]-self.mutation_range[0])
+        p.genome[i] = p.genome_multiplier*self.mutation_range[0]/2. + np.random.random()*p.genome_multiplier*(self.mutation_range[1]-self.mutation_range[0])
     # end mutation
 # end evolution

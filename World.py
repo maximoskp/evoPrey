@@ -51,7 +51,8 @@ class Constants:
                 'perception_radius': 200.0,
                 'food_level': 1.0,
                 'food_depletion': 1.0,
-                'food_radius': 0.0,
+                'food_radius': 50.0,
+                'escape_radius': 50.0,
                 'food_replenishment': 70
             }
         }
@@ -74,8 +75,10 @@ class Environment:
         self.prey_agents = []
         self.dead_predator_agents = []
         self.dead_prey_agents = []
+        self.escaped_prey_agents = []
         self.genetics = Evolution.Genetics()
         self.evoConst = Evolution.Constants()
+        self.door_location = np.array([0,self.constants.world_height/2])
     # end init
     
     def update(self):
@@ -89,9 +92,16 @@ class Environment:
             'predator': [],
             'prey': []
         }
+        agents2escape = []
         for a in self.prey_agents:
             a.update_friends_and_enemies( friends=self.prey_agents, enemies=self.predator_agents )
             a.move()
+            a2esc = a.update_escape()
+            agents2escape.extend(a2esc)
+        # escaped agents
+        for a in agents2escape:
+            self.escaped_prey_agents.append( a )
+            self.prey_agents.remove( a )
         for a in self.predator_agents:
             a.update_friends_and_enemies( friends=self.predator_agents, enemies=self.prey_agents )
             a.move()
@@ -112,10 +122,10 @@ class Environment:
         # set iterations of death to alive agents
         for i in range( len(self.prey_agents) ):
             self.prey_agents[i].death_iteration_number = self.total_iterations
-        self.prey_agents = self.genetics.evolve_population(self.prey_agents + self.dead_prey_agents, self.constants.total_prey_agents)
+        self.prey_agents = self.genetics.evolve_population(self.prey_agents + self.dead_prey_agents + self.escaped_prey_agents, self.constants.total_prey_agents)
         # randomise position, velocity and acceleration - reset is_alive
         for p in self.prey_agents:
-            p.init_random()
+            p.init_random('right')
         # re-initialize predators
         # set iterations of death to alive agents
         for i in range( len(self.predator_agents) ):
@@ -125,9 +135,10 @@ class Environment:
         # restore food levels and randomise position, velocity and acceleration - reset is_alive
         for p in self.predator_agents:
             p.restore_food_level()
-            p.init_random()
+            p.init_random('left')
         self.dead_predator_agents = []
         self.dead_prey_agents = []
+        self.escaped_prey_agents =[]
         # reset iterations
         self.total_iterations = 0
     # end evolve
@@ -191,6 +202,8 @@ class Environment:
             else:
                 # plt.text(p.x, p.y, "{:.2f}".format(p.food_level), c='white', alpha=0.3)
                 plt.text(p.x, p.y, str(int(p.food_level)), c='white', alpha=0.3)
+        # door
+        plt.plot(self.door_location[0], self.door_location[1], 'bs')
         plt.xticks([])
         plt.yticks([])
         plt.xlim([0, self.constants.world_width])
